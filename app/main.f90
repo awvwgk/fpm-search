@@ -8,7 +8,7 @@ use json, only: get_packages
 use M_CLI2, only : set_args, lget, arg=>unnamed, get_args
 use M_strings, only: join
 use config, only: config_t, registry_t, read_config_file
-
+use stdlib_error, only: check
 implicit none
 character(len=:),allocatable :: help_text(:), version_text(:)
 integer :: loop
@@ -68,11 +68,11 @@ registry_file_c = to_c_string(registry_file)
 if (lget('force-download') .or. (abs(now() - fileTime(registry_file_c)) .gt. time_to_live)) then
     i = remove(registry_file_c)
     download_ok = download(remote_registry_url, registry_file)
-    call ck(download_ok, 'Registry download failed')
+    call check(download_ok, 'Registry download failed')
 end if
 
 call get_packages(registry_file, tbl, r)
-call ck(r, 'get_packages() failed')
+call check(r, 'get_packages() failed')
 ! call tbl%stats(num_items=num_items)
 ! print *, 'num_items:', num_items
 
@@ -85,7 +85,7 @@ if (config_ok) then
     call download_registries(cfg_home, time_to_live, lget('force-download'))
     do n = 1, size(cfg_home%registry)
         call get_packages(cfg_home%registry(n)%local_file, tbl, r)
-        call ck(r, 'get_packages() failed')
+        call check(r, 'get_packages() failed')
     end do
 end if
 
@@ -95,7 +95,7 @@ if (config_ok) then
     call download_registries(cfg_etc, time_to_live, lget('force-download'))
     do n = 1, size(cfg_etc%registry)
         call get_packages(cfg_etc%registry(n)%local_file, tbl, r)
-        call ck(r, 'get_packages() failed')
+        call check(r, 'get_packages() failed')
     end do
 end if
 
@@ -129,7 +129,7 @@ subroutine download_registries(cfg, time_to_live, force)
         if (force .or. (abs(now() - fileTime(registry_file_c)) .gt. time_to_live)) then
             i = remove(registry_file_c)
             download_ok = download(cfg%registry(n)%url, cfg%registry(n)%local_file)
-            call ck(download_ok, 'Registry download failed')
+            call check(download_ok, 'Registry download failed')
         end if
     end do
 end subroutine
@@ -160,16 +160,6 @@ pure logical function is_alphanum(c) result(r)
     character(len=1), intent(in) :: c
     r = (c >= '0' .and. c <= '9') .or. (c >= 'a' .and. c <= 'z') .or. (c >= 'A' .and. c <= 'Z')
 end function
-
-subroutine ck(condition, msg)
-    logical, intent(in) :: condition
-    character(len=*), intent(in) :: msg
-
-    if (.not. condition) then
-        print *, 'ERROR:', msg
-        stop
-    end if
-end subroutine
 
 !
 ! to_alpha_numeric(url)
