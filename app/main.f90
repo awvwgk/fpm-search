@@ -9,6 +9,7 @@ use M_CLI2, only : set_args, lget, arg=>unnamed, get_args
 use M_strings, only: join
 use config, only: config_t, registry_t, read_config_file
 use stdlib_error, only: check
+use stdlib_ascii, only: is_alphanum
 implicit none
 character(len=:),allocatable :: help_text(:), version_text(:)
 integer :: loop
@@ -150,15 +151,6 @@ logical function is_windows() result(r)
     if (vstatus .eq. 0 .and. dir .eq. "Windows_NT") then
         r = .true.
     end if
-end function
-
-!
-! is_alphanum(c)
-! Original from https://github.com/fortran-lang/stdlib
-!
-pure logical function is_alphanum(c) result(r)
-    character(len=1), intent(in) :: c
-    r = (c >= '0' .and. c <= '9') .or. (c >= 'a' .and. c <= 'z') .or. (c >= 'A' .and. c <= 'Z')
 end function
 
 !

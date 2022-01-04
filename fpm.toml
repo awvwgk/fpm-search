@@ -11,6 +11,7 @@ M_CLI2       = {git = "https://github.com/urbanjost/M_CLI2", rev = "54cd522b7e2a
 M_strings    = {git = "https://github.com/urbanjost/M_strings"}
 json-fortran = {git = "https://github.com/jacobwilliams/json-fortran.git"}
 stdlib_error = {git = "https://github.com/degawa/stdlib_modules", branch="stdlib_error-fpm"}
+stdlib_ascii = {git = "https://github.com/degawa/stdlib_modules", branch="stdlib_ascii-fpm"}
 
 [library]
 source-dir="src"
