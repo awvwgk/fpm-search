@@ -1,9 +1,9 @@
 name = "fpm-search"
-version = "0.18.0"
+version = "0.19.0"
 license = "ISC"
 author = "fpm-search contributors"
 maintainer = "brocolis@eml.cc"
-copyright = "2021 fpm-search contributors"
+copyright = "2021-2022 fpm-search contributors"
 
 [dependencies]
 fhash        = {git = "https://github.com/LKedward/fhash", rev = "125ac80a3e736c08ba46184150923baca09a6bfd" }
