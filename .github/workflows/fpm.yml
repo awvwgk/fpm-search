@@ -1,6 +1,6 @@
 name: fpm
 
-on: [push, pull_request]
+on: [push]
 
 jobs:
   gfortran:
