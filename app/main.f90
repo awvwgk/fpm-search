@@ -421,69 +421,6 @@ subroutine table_info(tbl, pattern)
 
 end subroutine
 
-!
-! Function indexi
-!
-! Find the position of substring within string ignoring case.
-! If substring is not present in string, zero is returned.
-! Status: experimental
-!
-integer function indexi(string, substring) result(r)
-    character(len=*), intent(in) :: string
-    character(len=*), intent(in) :: substring
-    character(len=1) :: s
-    character(len=1) :: t
-    integer :: opos ! outer position
-    integer :: ipos ! inner position
-
-    r = 0
-    opos = 1
-
-    if (len(substring) .eq. 0 .or. len(substring) > len(string)) return
-
-    do while (opos <= len(string))
-        s = string(opos:opos)
-        t = substring(1:1)
-        ipos = 1
-
-        do while (.true.)
-            if (uchar(s) .ne. uchar(t)) then
-                ipos = 0
-                exit
-            end if
-
-            if ((opos+ipos) > len(string) .or. (ipos+1) > len(substring)) then
-                exit
-            end if
-
-            s = string(opos+ipos:opos+ipos)
-            t = substring(ipos+1:ipos+1)
-            ipos = ipos + 1
-        end do
-
-        if (ipos .eq. len(substring)) then
-            r = opos
-            exit
-        end if
-
-        opos = opos + 1
-    end do
-end function
-
-integer function uchar(c) result(r)
-    character(len=1), intent(in) :: c
-    integer :: uc
-
-    uc = ichar(c)
-
-    ! 'a' = 97, 'z' = 122
-    if (uc >= 97 .and. uc <= 122) then
-        r = uc - 32
-    else
-        r = uc
-    end if
-end function
-
 function to_c_string(f) result(c)
     character(len=*), intent(in) :: f
     character(len=:,kind=c_char), allocatable :: c
