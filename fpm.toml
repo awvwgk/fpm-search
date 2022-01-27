@@ -1,5 +1,5 @@
 name = "fpm-search"
-version = "0.19.0"
+version = "0.20.0"
 license = "ISC"
 author = "fpm-search contributors"
 maintainer = "brocolis@eml.cc"
@@ -12,6 +12,7 @@ M_strings    = {git = "https://github.com/urbanjost/M_strings"}
 json-fortran = {git = "https://github.com/jacobwilliams/json-fortran.git"}
 stdlib_error = {git = "https://github.com/degawa/stdlib_modules", branch="stdlib_error-fpm"}
 stdlib_ascii = {git = "https://github.com/degawa/stdlib_modules", branch="stdlib_ascii-fpm"}
+pcre         = {git = "https://git.sr.ht/~une/fortran-pcre" }
 
 [library]
 source-dir="src"

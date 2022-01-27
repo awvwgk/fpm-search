@@ -10,6 +10,7 @@ use M_strings, only: join
 use config, only: config_t, registry_t, read_config_file
 use stdlib_error, only: check
 use stdlib_ascii, only: is_alphanum
+use pcre, only: pcre_t, regex, regex_destroy, match, PCRE_CASELESS, PCRE_NO_AUTO_CAPTURE
 implicit none
 character(len=:),allocatable :: help_text(:), version_text(:)
 integer :: loop
@@ -246,7 +247,7 @@ subroutine usage()
 version_text=[character(len=80) :: &
 & 'PRODUCT:         fpm (Fortran Package Manager) utilities and examples', &
 & 'PROGRAM:         fpm-search(1)                                       ', &
-& 'VERSION:         0.19.0                                              ', &
+& 'VERSION:         0.20.0                                              ', &
 & 'DESCRIPTION:     display available FPM packages                      ', &
 & 'AUTHOR:          brocolis@eml.cc                                     ', &
 & 'LICENSE:         ISC License                                         ', &
@@ -328,8 +329,8 @@ subroutine table_search(tbl, pattern)
         call table_get_package(tbl, fhash_key(i), pkg, r)
 
         if (.not. r0) then
-            r1 = indexi(pkg%name, pattern) > 0
-            r2 = indexi(pkg%description, pattern) > 0
+            r1 = pcre_match(pattern, pkg%name) > 0
+            r2 = pcre_match(pattern, pkg%description) > 0
         end if
 
         if (r0 .or. r1 .or. r2) then
@@ -357,8 +358,8 @@ subroutine table_info(tbl, pattern)
         call table_get_package(tbl, fhash_key(i), pkg, r)
 
         if (.not. r0) then
-            r1 = indexi(pkg%name, pattern) > 0
-            r2 = indexi(pkg%description, pattern) > 0
+            r1 = pcre_match(pattern, pkg%name) > 0
+            r2 = pcre_match(pattern, pkg%description) > 0
         end if
 
         if (r0 .or. r1 .or. r2) then
@@ -421,73 +422,27 @@ subroutine table_info(tbl, pattern)
 
 end subroutine
 
-!
-! Function indexi
-!
-! Find the position of substring within string ignoring case.
-! If substring is not present in string, zero is returned.
-! Status: experimental
-!
-integer function indexi(string, substring) result(r)
-    character(len=*), intent(in) :: string
-    character(len=*), intent(in) :: substring
-    character(len=1) :: s
-    character(len=1) :: t
-    integer :: opos ! outer position
-    integer :: ipos ! inner position
-
-    r = 0
-    opos = 1
-
-    if (len(substring) .eq. 0 .or. len(substring) > len(string)) return
-
-    do while (opos <= len(string))
-        s = string(opos:opos)
-        t = substring(1:1)
-        ipos = 1
-
-        do while (.true.)
-            if (uchar(s) .ne. uchar(t)) then
-                ipos = 0
-                exit
-            end if
-
-            if ((opos+ipos) > len(string) .or. (ipos+1) > len(substring)) then
-                exit
-            end if
-
-            s = string(opos+ipos:opos+ipos)
-            t = substring(ipos+1:ipos+1)
-            ipos = ipos + 1
-        end do
-
-        if (ipos .eq. len(substring)) then
-            r = opos
-            exit
-        end if
-
-        opos = opos + 1
-    end do
-end function
-
-integer function uchar(c) result(r)
-    character(len=1), intent(in) :: c
-    integer :: uc
-
-    uc = ichar(c)
-
-    ! 'a' = 97, 'z' = 122
-    if (uc >= 97 .and. uc <= 122) then
-        r = uc - 32
-    else
-        r = uc
-    end if
-end function
-
 function to_c_string(f) result(c)
     character(len=*), intent(in) :: f
     character(len=:,kind=c_char), allocatable :: c
     c = f(1:len_trim(f)) // c_null_char
+end function
+
+integer function pcre_match(pattern, subject) result(r)
+    character(len=*), intent(in) :: pattern
+    character(len=*), intent(in) :: subject
+    type(pcre_t) :: re
+    integer, dimension(1:3) :: matches
+    integer :: n
+
+    r = 0
+    re = regex(pattern, ior(PCRE_CASELESS, PCRE_NO_AUTO_CAPTURE))
+
+    if (match(re, subject(1:len_trim(subject)), matches, n)) then
+        r = n
+    end if
+
+    call regex_destroy(re)
 end function
 
 end program main
