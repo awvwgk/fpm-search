@@ -23,3 +23,13 @@ if fpm.fc:find("gfortran") then
         fpm.add_fflags("-static")
     end
 end
+
+function OnBuildSuccess()
+    print("OK")
+end
+
+function OnBuildError(message)
+    if message:find("cannot find -lpcre") then
+        -- print libpcre install instructions
+    end
+end
