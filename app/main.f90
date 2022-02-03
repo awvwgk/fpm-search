@@ -10,7 +10,6 @@ use M_strings, only: join
 use config, only: config_t, registry_t, read_config_file
 use stdlib_error, only: check
 use stdlib_ascii, only: is_alphanum
-use pcre, only: pcre_t, regex, regex_destroy, match, PCRE_CASELESS, PCRE_NO_AUTO_CAPTURE
 implicit none
 character(len=:),allocatable :: help_text(:), version_text(:)
 integer :: loop
@@ -271,7 +270,7 @@ help_text=[character(len=80) :: &
 & '                                                                                ', &
 & 'OPTIONS                                                                         ', &
 & '    SEARCH_STRING  A string used to match package descriptions.                 ', &
-& '                   It is case-insensitive. The default is "", causing all       ', &
+& '                   It is case-sensitive. The default is "", causing all         ', &
 & '                   registered packages to be displayed.                         ', &
 & '    --verbose,-V   give more-detailed information about the packages matching   ', &
 & '                   SEARCH_STRING.                                               ', &
@@ -329,8 +328,8 @@ subroutine table_search(tbl, pattern)
         call table_get_package(tbl, fhash_key(i), pkg, r)
 
         if (.not. r0) then
-            r1 = pcre_match(pattern, pkg%name) > 0
-            r2 = pcre_match(pattern, pkg%description) > 0
+            r1 = index(pkg%name, pattern) > 0
+            r2 = index(pkg%description, pattern) > 0
         end if
 
         if (r0 .or. r1 .or. r2) then
@@ -358,8 +357,8 @@ subroutine table_info(tbl, pattern)
         call table_get_package(tbl, fhash_key(i), pkg, r)
 
         if (.not. r0) then
-            r1 = pcre_match(pattern, pkg%name) > 0
-            r2 = pcre_match(pattern, pkg%description) > 0
+            r1 = index(pkg%name, pattern) > 0
+            r2 = index(pkg%description, pattern) > 0
         end if
 
         if (r0 .or. r1 .or. r2) then
@@ -426,23 +425,6 @@ function to_c_string(f) result(c)
     character(len=*), intent(in) :: f
     character(len=:,kind=c_char), allocatable :: c
     c = f(1:len_trim(f)) // c_null_char
-end function
-
-integer function pcre_match(pattern, subject) result(r)
-    character(len=*), intent(in) :: pattern
-    character(len=*), intent(in) :: subject
-    type(pcre_t) :: re
-    integer, dimension(1:3) :: matches
-    integer :: n
-
-    r = 0
-    re = regex(pattern, ior(PCRE_CASELESS, PCRE_NO_AUTO_CAPTURE))
-
-    if (match(re, subject(1:len_trim(subject)), matches, n)) then
-        r = n
-    end if
-
-    call regex_destroy(re)
 end function
 
 end program main
