@@ -1,3 +1,5 @@
+![fpm-search](fpm-search.png)
+
 # fpm-search
 Available Packages
 
